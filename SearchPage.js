@@ -79,7 +79,7 @@ function urlForQueryAndPage(key, value, pageNumber) {
     .map(key => key + '=' + encodeURIComponent(data[key]))
     .join('&');
 
-  return '//api.nestoria.co.uk/api?' + querystring;
+  return 'http://api.nestoria.co.uk/api?' + querystring;
 };
 
 class SearchPage extends Component {
@@ -87,25 +87,37 @@ class SearchPage extends Component {
     super(props);
     this.state = {
       searchString: 'london',
-      isLoading: false
+      isLoading: false,
+      message: ''
     };
   }
   onSearchTextChanged(event) {
-    console.log('onSearchTextChanged');
     this.setState({ searchString: event.nativeEvent.text });
-    console.log(this.state.searchString);
   }
   _executeQuery(query) {
-    console.log(query);
     this.setState({ isLoading: true });
+    fetch(query)
+    .then(response => response.json())
+    .then((json) => this._handleResponse(json.response))
+    .catch((error) => 
+       this.setState({
+        isLoading: false,
+        message: 'Something bad happened ' + error
+     }));
   }
-
+  _handleResponse(response) {
+  this.setState({ isLoading: false , message: '' });
+  if (response.application_response_code.substr(0, 1) === '1') {
+    console.log('Properties found: ' + response.listings.length);
+  } else {
+    this.setState({ message: 'Location not recognized; please try again.'});
+  }
+}
   onSearchPressed() {
     var query = urlForQueryAndPage('place_name', this.state.searchString, 1);
     this._executeQuery(query);
   }
   render() {
-    console.log('SearchPage.render');
     var spinner = this.state.isLoading ?
     ( <ActivityIndicatorIOS
         hidden='true'
@@ -135,6 +147,7 @@ class SearchPage extends Component {
           <Text style={styles.buttonText}>Location</Text>
         </TouchableHighlight>
         {spinner}
+        <Text style={styles.description}>{this.state.message}</Text>
       </View>
     );
   }
