@@ -18,14 +18,12 @@ var styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 18,
     textAlign: 'center',
-    color: '#656565',
-    borderWidth: 1
+    color: '#656565'
   },
   container: {
     padding: 30,
     marginTop: 65,
-    alignItems: 'center',
-    backgroundColor: '#aaa'
+    alignItems: 'center'
   },
   flowRight: {
     flexDirection: 'row',
@@ -92,6 +90,20 @@ class SearchPage extends Component {
       message: ''
     };
   }
+  onLocationPressed() {
+    navigator.geolocation.getCurrentPosition(
+      location => {
+        var search = location.coords.latitude + ',' + location.coords.longitude;
+        this.setState({ searchString: search });
+        var query = urlForQueryAndPage('centre_point', search, 1);
+        this._executeQuery(query);
+      },
+      error => {
+        this.setState({
+          message: 'There was a problem with obtaining your location: ' + error.message
+        });
+      });
+  }
   onSearchTextChanged(event) {
     this.setState({ searchString: event.nativeEvent.text });
   }
@@ -149,7 +161,7 @@ class SearchPage extends Component {
           </TouchableHighlight>
         </View>
         <TouchableHighlight style={styles.button}
-            underlayColor='#99d9f4'>
+            underlayColor='#99d9f4' onPress={this.onLocationPressed.bind(this)}>
           <Text style={styles.buttonText}>Location</Text>
         </TouchableHighlight>
         {spinner}
