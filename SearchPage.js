@@ -97,6 +97,7 @@ class SearchPage extends Component {
   }
   _executeQuery(query) {
     this.setState({ isLoading: true });
+    console.log(query);
     fetch(query)
     .then(response => response.json())
     .then((json) => this._handleResponse(json.response))
